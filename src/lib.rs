@@ -6,22 +6,16 @@ extern crate syn;
 extern crate quote;
 
 use rustc_macro::TokenStream;
-use syn::{VariantData, Body, Field, Ident};
+use syn::{Body, Field, Ident};
 use quote::Tokens;
-
-fn raw_token(s: &str) -> Tokens {
-    let mut t = Tokens::new();
-    t.append(s);
-    t
-}
 
 /// Get the correct name for the field, given it's syn provided identifier, and
 /// index in the field list.
-fn field_name(ident: &Option<Ident>, index: usize) -> Tokens {
+fn field_name(ident: &Option<Ident>, index: usize) -> Ident {
     if let Some(ref id) = *ident {
-        raw_token(&id.to_string())
+        id.clone()
     } else {
-        raw_token(&format!("{}", index))
+        index.into()
     }
 }
 
@@ -70,13 +64,11 @@ pub fn derive_abomonation(input: TokenStream) -> TokenStream {
     let ast = syn::parse_macro_input(&source).unwrap();
 
     // Get the name of the struct into a Tokens
-    let mut name = raw_token(&ast.ident.to_string());
+    let name = &ast.ident;
 
     // Extract the fields from the parsed struct declaration
-    let fields: &[Field] = match ast.body {
-        Body::Struct(VariantData::Struct(ref fields)) |
-        Body::Struct(VariantData::Tuple(ref fields)) => fields,
-        Body::Struct(VariantData::Unit) => &[],
+    let fields = match ast.body {
+        Body::Struct(ref variant_data) => variant_data.fields(),
         Body::Enum(_) => panic!("Abomonation doesn't support Enums"),
     };
 
@@ -87,6 +79,9 @@ pub fn derive_abomonation(input: TokenStream) -> TokenStream {
 
     // Build the output tokens
     let result = quote! {
+        // Original struct unmodified
+        #ast
+
         impl ::abomonation::Abomonation for #name {
             #[inline] unsafe fn entomb(&self, _writer: &mut Vec<u8>) {
                 #entomb
@@ -103,5 +98,5 @@ pub fn derive_abomonation(input: TokenStream) -> TokenStream {
     };
 
     // Generate the final value as a TokenStream and return it
-    format!("{}\n{}", source, result.to_string()).parse().unwrap()
+    result.to_string().parse().unwrap()
 }
