@@ -1,0 +1,11 @@
+[package]
+name = "abomonation_derive"
+version = "0.1.0"
+authors = ["Michael Layzell <michael@thelayzells.com>"]
+
+[lib]
+rustc-macro = true
+
+[dependencies]
+syn = "0.8"
+quote = "0.2"

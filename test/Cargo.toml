@@ -1,0 +1,8 @@
+[package]
+name = "abomonation_derive_test"
+version = "0.1.0"
+authors = ["Michael Layzell <michael@thelayzells.com>"]
+
+[dependencies]
+abomonation_derive = { path = ".." }
+abomonation = "0.4.4"
