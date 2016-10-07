@@ -65,6 +65,7 @@ pub fn derive_abomonation(input: TokenStream) -> TokenStream {
 
     // Get the name of the struct into a Tokens
     let name = &ast.ident;
+    let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
 
     // Extract the fields from the parsed struct declaration
     let fields = match ast.body {
@@ -82,7 +83,7 @@ pub fn derive_abomonation(input: TokenStream) -> TokenStream {
         // Original struct unmodified
         #ast
 
-        impl ::abomonation::Abomonation for #name {
+        impl #impl_generics ::abomonation::Abomonation for #name #ty_generics #where_clause {
             #[inline] unsafe fn entomb(&self, _writer: &mut Vec<u8>) {
                 #entomb
             }

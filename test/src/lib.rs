@@ -68,4 +68,23 @@ mod tests {
             assert!(rest.len() == 0);
         }
     }
+
+    #[derive(Eq, PartialEq, Abomonation)]
+    pub struct GenericStruct<T: ::abomonation::Abomonation, U: ::abomonation::Abomonation>(T, u64, U);
+
+    #[test]
+    fn test_generic_struct() {
+        // create some test data out of abomonation-approved types
+        let record = GenericStruct("test".to_owned(), 0, vec![0, 1, 2]);
+
+        // encode vector into a Vec<u8>
+        let mut bytes = Vec::new();
+        unsafe { encode(&record, &mut bytes); }
+
+        // decode from binary data
+        if let Some((result, rest)) = unsafe { decode::<GenericStruct<String, Vec<u8>>>(&mut bytes) } {
+            assert!(result == &record);
+            assert!(rest.len() == 0);
+        }
+    }
 }
