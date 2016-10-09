@@ -16,17 +16,17 @@ pub fn derive_abomonation(input: TokenStream) -> TokenStream {
     let mut ast = syn::parse_macro_input(&source).unwrap();
 
     // Generate the Entomb, Embalm, and Exhume match bodies
-    let entomb = each_field(&mut ast, BindStyle::Ref, |bi| {
+    let entomb = each_field(&mut ast, &BindStyle::Ref.into(), |bi| {
         quote! {
         ::abomonation::Abomonation::entomb(#bi, _writer);
     }
     });
-    let embalm = each_field(&mut ast, BindStyle::RefMut, |bi| {
+    let embalm = each_field(&mut ast, &BindStyle::RefMut.into(), |bi| {
         quote! {
         ::abomonation::Abomonation::embalm(#bi);
     }
     });
-    let exhume = each_field(&mut ast, BindStyle::RefMut, |bi| {
+    let exhume = each_field(&mut ast, &BindStyle::RefMut.into(), |bi| {
         quote! {
         let temp = bytes;
         let exhume_result = ::abomonation::Abomonation::exhume(#bi, temp);
