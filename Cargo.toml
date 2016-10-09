@@ -8,8 +8,8 @@ name = "abomonation_derive"
 rustc-macro = true
 
 [dependencies]
-syn = "0.8"
-quote = "0.2"
+syn = "0.9"
+quote = "0.3"
 
 [dev-dependencies]
 abomonation = "*"

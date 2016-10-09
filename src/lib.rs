@@ -7,56 +7,158 @@ extern crate syn;
 extern crate quote;
 
 use rustc_macro::TokenStream;
-use syn::{Body, Field, Ident};
-use quote::Tokens;
+use syn::{Body, Field, Ident, MacroInput, VariantData};
+use quote::{Tokens, ToTokens};
 
-/// Get the correct name for the field, given it's syn provided identifier, and
-/// index in the field list.
-fn field_name(ident: &Option<Ident>, index: usize) -> Ident {
-    if let Some(ref id) = *ident {
-        id.clone()
-    } else {
-        index.into()
+#[allow(dead_code)]
+#[derive(Copy, Clone)]
+enum BindStyle {
+    Move,
+    MoveMut,
+    Ref,
+    RefMut,
+}
+
+fn match_pattern<'a>(bind: BindStyle,
+                     name: &Tokens,
+                     vd: &'a VariantData)
+                     -> (Tokens, Vec<BindingInfo<'a>>) {
+    let mut t = Tokens::new();
+    let mut matches = Vec::new();
+
+    let prefix = match bind {
+        BindStyle::Move => Tokens::new(),
+        BindStyle::MoveMut => quote!(mut),
+        BindStyle::Ref => quote!(ref),
+        BindStyle::RefMut => quote!(ref mut),
+    };
+
+    name.to_tokens(&mut t);
+    match *vd {
+        VariantData::Unit => {}
+        VariantData::Tuple(ref fields) => {
+            t.append("(");
+            for (i, field) in fields.iter().enumerate() {
+                let ident: Ident = format!("__binding_{}", i).into();
+                quote!(#prefix #ident ,).to_tokens(&mut t);
+                matches.push(BindingInfo {
+                    reference: quote!(#ident),
+                    field: field,
+                });
+            }
+            t.append(")");
+        }
+        VariantData::Struct(ref fields) => {
+            t.append("{");
+            for (i, field) in fields.iter().enumerate() {
+                let field_name = field.ident.as_ref().unwrap();
+                let ident: Ident = format!("__binding_{}", i).into();
+                quote!(#field_name : #prefix #ident ,).to_tokens(&mut t);
+                matches.push(BindingInfo {
+                    reference: quote!(#ident),
+                    field: field,
+                });
+            }
+            t.append("}");
+        }
+    }
+
+    (t, matches)
+}
+
+struct BindingInfo<'a> {
+    pub reference: Tokens,
+    pub field: &'a Field,
+}
+
+impl<'a> ToTokens for BindingInfo<'a> {
+    fn to_tokens(&self, tokens: &mut Tokens) {
+        self.reference.to_tokens(tokens);
     }
 }
 
-fn entomb_body(fields: &[Field]) -> Tokens {
-    let mut toks = Tokens::new();
-    toks.append_all(fields.iter().enumerate().map(|(i, field)| {
-        let field_name = field_name(&field.ident, i);
-        quote! {
-            ::abomonation::Abomonation::entomb(&self.#field_name, _writer);
+/// This method generates a match self {} body for the given macro input `input`
+/// It should be used as follows:
+///
+/// ```
+/// let body = combine_substructure(ast, BindStyle::Ref, |fields| {
+///     let t = fields.iter().map(|&(ref i, _)| {
+///         quote!(::some::Trait::Method(#i))
+///     });
+///     quote!(#(#t ;)*)
+/// });
+///
+/// quote!(match *self { #body })
+/// ```
+fn combine_substructure<F>(input: &MacroInput, bind: BindStyle, func: F) -> Tokens
+    where F: Fn(&[BindingInfo]) -> Tokens
+{
+
+    let ident = &input.ident;
+    // Generate patterns for matching against all of the variants
+    let variants = match input.body {
+        Body::Enum(ref variants) => {
+            variants.iter()
+                .map(|variant| {
+                    let variant_ident = &variant.ident;
+                    match_pattern(bind, &quote!(#ident :: #variant_ident), &variant.data)
+                })
+                .collect()
         }
-    }));
-    toks
+        Body::Struct(ref vd) => vec![match_pattern(bind, &quote!(#ident), vd)],
+    };
+
+    // Generate the final tokens
+    let mut t = Tokens::new();
+    // Call the passed in function with the passed in name/type pairs
+    for (pat, bindings) in variants {
+        let body = func(&bindings[..]);
+        quote!(#pat => { #body }).to_tokens(&mut t);
+    }
+
+    t
 }
 
-fn embalm_body(fields: &[Field]) -> Tokens {
-    let mut toks = Tokens::new();
-    toks.append_all(fields.iter().enumerate().map(|(i, field)| {
-        let field_name = field_name(&field.ident, i);
-        quote! {
-            ::abomonation::Abomonation::embalm(&mut self.#field_name);
-        }
-    }));
-    toks
+fn entomb_body(ast: &MacroInput) -> Tokens {
+    combine_substructure(ast, BindStyle::Ref, |fields| {
+        let mut toks = Tokens::new();
+        toks.append_all(fields.iter().map(|bind| {
+            quote! {
+                ::abomonation::Abomonation::entomb(#bind, _writer);
+            }
+        }));
+        toks
+    })
 }
 
-fn exhume_body(fields: &[Field]) -> Tokens {
-    let mut toks = Tokens::new();
-    toks.append_all(fields.iter().enumerate().map(|(i, field)| {
-        let field_name = field_name(&field.ident, i);
-        quote! {
-            let temp = bytes;
-            let exhume_result = ::abomonation::Abomonation::exhume(&mut self.#field_name, temp);
-            bytes = if let Some(bytes) = exhume_result {
-                bytes
-            } else {
-                return None
-            };
-        }
-    }));
-    toks
+fn embalm_body(ast: &MacroInput) -> Tokens {
+    combine_substructure(ast, BindStyle::RefMut, |fields| {
+        let mut toks = Tokens::new();
+        toks.append_all(fields.iter().map(|bind| {
+            quote! {
+                ::abomonation::Abomonation::embalm(#bind);
+            }
+        }));
+        toks
+    })
+}
+
+fn exhume_body(ast: &MacroInput) -> Tokens {
+    combine_substructure(ast, BindStyle::RefMut, |fields| {
+        let mut toks = Tokens::new();
+        toks.append_all(fields.iter().map(|bind| {
+            quote! {
+                let temp = bytes;
+                let exhume_result = ::abomonation::Abomonation::exhume(#bind, temp);
+                bytes = if let Some(bytes) = exhume_result {
+                    bytes
+                } else {
+                    return None
+                };
+            }
+        }));
+        toks
+    })
 }
 
 #[rustc_macro_derive(Abomonation)]
@@ -68,16 +170,10 @@ pub fn derive_abomonation(input: TokenStream) -> TokenStream {
     let name = &ast.ident;
     let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
 
-    // Extract the fields from the parsed struct declaration
-    let fields = match ast.body {
-        Body::Struct(ref variant_data) => variant_data.fields(),
-        Body::Enum(_) => panic!("Abomonation doesn't support Enums"),
-    };
-
     // Generate the Entomb, Embalm, and Exhume function bodies
-    let entomb = entomb_body(fields);
-    let embalm = embalm_body(fields);
-    let exhume = exhume_body(fields);
+    let entomb = entomb_body(&ast);
+    let embalm = embalm_body(&ast);
+    let exhume = exhume_body(&ast);
 
     // Build the output tokens
     let result = quote! {
@@ -86,14 +182,14 @@ pub fn derive_abomonation(input: TokenStream) -> TokenStream {
 
         impl #impl_generics ::abomonation::Abomonation for #name #ty_generics #where_clause {
             #[inline] unsafe fn entomb(&self, _writer: &mut Vec<u8>) {
-                #entomb
+                match *self { #entomb }
             }
             #[inline] unsafe fn embalm(&mut self) {
-                #embalm
+                match *self { #embalm }
             }
             #[inline] unsafe fn exhume<'a,'b>(&'a mut self, mut bytes: &'b mut [u8])
                                               -> Option<&'b mut [u8]> {
-                #exhume
+                match *self { #exhume }
                 Some(bytes)
             }
         }

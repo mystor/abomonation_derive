@@ -87,4 +87,52 @@ mod tests {
             assert!(rest.len() == 0);
         }
     }
+
+    #[allow(dead_code)]
+    #[derive(Eq, PartialEq, Abomonation)]
+    pub enum BasicEnum {
+        Apples,
+        Pears,
+        Chicken
+    }
+
+    #[test]
+    fn test_basic_enum() {
+        // create some test data out of abomonation-approved types
+        let record = BasicEnum::Apples;
+
+        // encode vector into a Vec<u8>
+        let mut bytes = Vec::new();
+        unsafe { encode(&record, &mut bytes); }
+
+        // decode from binary data
+        if let Some((result, rest)) = unsafe { decode::<BasicEnum>(&mut bytes) } {
+            assert!(result == &record);
+            assert!(rest.len() == 0);
+        }
+    }
+
+    #[allow(dead_code)]
+    #[derive(Eq, PartialEq, Abomonation)]
+    pub enum DataEnum {
+        A(String, u64, Vec<u8>),
+        B,
+        C(String, String, String)
+    }
+
+    #[test]
+    fn test_data_enum() {
+        // create some test data out of abomonation-approved types
+        let record = DataEnum::A("test".to_owned(), 0, vec![0, 1, 2]);
+
+        // encode vector into a Vec<u8>
+        let mut bytes = Vec::new();
+        unsafe { encode(&record, &mut bytes); }
+
+        // decode from binary data
+        if let Some((result, rest)) = unsafe { decode::<DataEnum>(&mut bytes) } {
+            assert!(result == &record);
+            assert!(rest.len() == 0);
+        }
+    }
 }
