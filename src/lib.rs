@@ -1,16 +1,16 @@
-#![feature(rustc_macro, rustc_macro_lib)]
+#![feature(proc_macro, proc_macro_lib)]
 #![cfg(not(test))]
 
-extern crate rustc_macro;
+extern crate proc_macro;
 extern crate syn;
 extern crate synstructure;
 #[macro_use]
 extern crate quote;
 
-use rustc_macro::TokenStream;
+use proc_macro::TokenStream;
 use synstructure::{each_field, BindStyle};
 
-#[rustc_macro_derive(Abomonation)]
+#[proc_macro_derive(Abomonation)]
 pub fn derive_abomonation(input: TokenStream) -> TokenStream {
     let source = input.to_string();
     let mut ast = syn::parse_macro_input(&source).unwrap();

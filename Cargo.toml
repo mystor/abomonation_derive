@@ -5,7 +5,7 @@ authors = ["Michael Layzell <michael@thelayzells.com>"]
 
 [lib]
 name = "abomonation_derive"
-rustc-macro = true
+proc-macro = true
 
 [dependencies]
 syn = "0.9"
