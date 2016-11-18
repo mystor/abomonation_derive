@@ -13,20 +13,20 @@ use synstructure::{each_field, BindStyle};
 #[proc_macro_derive(Abomonation)]
 pub fn derive_abomonation(input: TokenStream) -> TokenStream {
     let source = input.to_string();
-    let mut ast = syn::parse_macro_input(&source).unwrap();
+    let ast = syn::parse_macro_input(&source).unwrap();
 
     // Generate the Entomb, Embalm, and Exhume match bodies
-    let entomb = each_field(&mut ast, &BindStyle::Ref.into(), |bi| {
+    let entomb = each_field(&ast, &BindStyle::Ref.into(), |bi| {
         quote! {
         ::abomonation::Abomonation::entomb(#bi, _writer);
     }
     });
-    let embalm = each_field(&mut ast, &BindStyle::RefMut.into(), |bi| {
+    let embalm = each_field(&ast, &BindStyle::RefMut.into(), |bi| {
         quote! {
         ::abomonation::Abomonation::embalm(#bi);
     }
     });
-    let exhume = each_field(&mut ast, &BindStyle::RefMut.into(), |bi| {
+    let exhume = each_field(&ast, &BindStyle::RefMut.into(), |bi| {
         quote! {
         let temp = bytes;
         let exhume_result = ::abomonation::Abomonation::exhume(#bi, temp);
@@ -42,9 +42,6 @@ pub fn derive_abomonation(input: TokenStream) -> TokenStream {
     let name = &ast.ident;
     let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
     let result = quote! {
-        // Original struct
-        #ast
-
         impl #impl_generics ::abomonation::Abomonation for #name #ty_generics #where_clause {
             #[inline] unsafe fn entomb(&self, _writer: &mut Vec<u8>) {
                 match *self { #entomb }

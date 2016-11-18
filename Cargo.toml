@@ -1,6 +1,6 @@
 [package]
 name = "abomonation_derive"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Michael Layzell <michael@thelayzells.com>"]
 
 [lib]
@@ -8,9 +8,9 @@ name = "abomonation_derive"
 proc-macro = true
 
 [dependencies]
-syn = "0.9"
+syn = "0.10"
 quote = "0.3"
-synstructure = "0.2"
+synstructure = "0.4"
 
 [dev-dependencies]
 abomonation = "*"
