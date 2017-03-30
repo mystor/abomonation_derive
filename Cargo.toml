@@ -17,4 +17,4 @@ quote = "0.3"
 synstructure = "0.4"
 
 [dev-dependencies]
-abomonation = "*"
+abomonation = "0.4"
