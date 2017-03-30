@@ -2,6 +2,10 @@
 name = "abomonation_derive"
 version = "0.1.2"
 authors = ["Michael Layzell <michael@thelayzells.com>"]
+description = "A custom derive plugin for abomonation"
+license = "MIT"
+repository = "https://github.com/mystor/abomonation_derive"
+documentation = "https://docs.rs/abomonation_derive"
 
 [lib]
 name = "abomonation_derive"
