@@ -1,4 +1,3 @@
-#![feature(proc_macro, proc_macro_lib)]
 #![cfg(not(test))]
 
 extern crate proc_macro;
