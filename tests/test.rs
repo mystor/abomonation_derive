@@ -68,7 +68,7 @@ mod tests {
     }
 
     #[derive(Eq, PartialEq, Abomonation)]
-    pub struct GenericStruct<T: ::abomonation::Abomonation, U: ::abomonation::Abomonation>(T, u64, U);
+    pub struct GenericStruct<T, U>(T, u64, U);
 
     #[test]
     fn test_generic_struct() {
