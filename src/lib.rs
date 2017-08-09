@@ -40,8 +40,11 @@ pub fn derive_abomonation(input: TokenStream) -> TokenStream {
     // Build the output tokens
     let name = &ast.ident;
     let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
+    let where_clause_complete = add_bounds(where_clause, &ast.generics.ty_params);
     let result = quote! {
-        impl #impl_generics ::abomonation::Abomonation for #name #ty_generics #where_clause {
+        impl #impl_generics ::abomonation::Abomonation for #name #ty_generics
+            #where_clause_complete
+        {
             #[inline] unsafe fn entomb(&self, _writer: &mut Vec<u8>) {
                 match *self { #entomb }
             }
@@ -58,4 +61,12 @@ pub fn derive_abomonation(input: TokenStream) -> TokenStream {
 
     // Generate the final value as a TokenStream and return it
     result.to_string().parse().unwrap()
+}
+
+fn add_bounds(where_clause: &syn::WhereClause, ty_params: &[syn::TyParam]) -> quote::Tokens {
+    if where_clause.predicates.is_empty() {
+        quote! { where #(#ty_params: ::abomonation::Abomonation),* }
+    } else {
+        quote! { #where_clause #(, #ty_params: ::abomonation::Abomonation)* }
+    }
 }
