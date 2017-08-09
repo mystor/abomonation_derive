@@ -41,6 +41,7 @@ pub fn derive_abomonation(input: TokenStream) -> TokenStream {
     let name = &ast.ident;
     let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
     let where_clause_complete = add_bounds(where_clause, &ast.generics.ty_params);
+    println!("{:?}", where_clause_complete);
     let result = quote! {
         impl #impl_generics ::abomonation::Abomonation for #name #ty_generics
             #where_clause_complete
@@ -64,9 +65,10 @@ pub fn derive_abomonation(input: TokenStream) -> TokenStream {
 }
 
 fn add_bounds(where_clause: &syn::WhereClause, ty_params: &[syn::TyParam]) -> quote::Tokens {
+    let idents = ty_params.iter().map(|ty_param| &ty_param.ident);
     if where_clause.predicates.is_empty() {
-        quote! { where #(#ty_params: ::abomonation::Abomonation),* }
+        quote! { where #(#idents: ::abomonation::Abomonation),* }
     } else {
-        quote! { #where_clause #(, #ty_params: ::abomonation::Abomonation)* }
+        quote! { #where_clause #(, #idents: ::abomonation::Abomonation)* }
     }
 }
