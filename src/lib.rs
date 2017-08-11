@@ -41,7 +41,6 @@ pub fn derive_abomonation(input: TokenStream) -> TokenStream {
     let name = &ast.ident;
     let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
     let where_clause_complete = add_bounds(where_clause, &ast.generics.ty_params);
-    println!("{:?}", where_clause_complete);
     let result = quote! {
         impl #impl_generics ::abomonation::Abomonation for #name #ty_generics
             #where_clause_complete
