@@ -133,4 +133,13 @@ mod tests {
             assert!(rest.len() == 0);
         }
     }
+
+    pub trait SomeTrait {}
+
+    #[allow(dead_code)]
+    #[derive(Abomonation)]
+    pub enum GenericEnumWithBounds<T: SomeTrait> {
+        A(T),
+        B
+    }
 }
