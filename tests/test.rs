@@ -1,3 +1,5 @@
+#![deny(unused_mut)]
+
 #[macro_use]
 extern crate abomonation_derive;
 extern crate abomonation;
