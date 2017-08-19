@@ -51,6 +51,7 @@ pub fn derive_abomonation(input: TokenStream) -> TokenStream {
             #[inline] unsafe fn embalm(&mut self) {
                 match *self { #embalm }
             }
+            #[allow(unused_mut)]
             #[inline] unsafe fn exhume<'a,'b>(&'a mut self, mut bytes: &'b mut [u8])
                                               -> Option<&'b mut [u8]> {
                 match *self { #exhume }
