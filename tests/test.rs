@@ -157,7 +157,6 @@ mod tests {
         B
     }
 
-
     #[test]
     fn test_ignore_attribute() {
 
