@@ -4,10 +4,10 @@ extern crate synstructure;
 #[macro_use]
 extern crate quote;
 
-decl_derive!([Abomonation, attributes(abomonate_ignore)] => derive_abomonation);
+decl_derive!([Abomonation, attributes(unsafe_abomonate_ignore)] => derive_abomonation);
 
 fn derive_abomonation(mut s: synstructure::Structure) -> quote::Tokens {
-    s.filter(|bi| !bi.ast().attrs.iter().any(|attr| attr.name() == "abomonate_ignore"));
+    s.filter(|bi| !bi.ast().attrs.iter().any(|attr| attr.name() == "unsafe_abomonate_ignore"));
     
     let entomb = s.each(|bi| quote! {
         ::abomonation::Abomonation::entomb(#bi, _write)?;
