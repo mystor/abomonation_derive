@@ -164,6 +164,7 @@ mod tests {
         #[derive(Abomonation)]
         pub struct StructWithPhantomMarker<T> {
             data: usize,
+            // test fails to built without this attribute.
             #[unsafe_abomonate_ignore] 
             _phantom: ::std::marker::PhantomData<T>,
         }
