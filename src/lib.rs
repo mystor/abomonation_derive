@@ -19,8 +19,7 @@ fn derive_abomonation(mut s: synstructure::Structure) -> quote::Tokens {
 
     let exhume = s.each(|bi| quote! {
         let temp = bytes;
-        let exhume_result = ::abomonation::Abomonation::exhume(#bi, temp);
-        bytes = exhume_result?;
+        bytes = ::abomonation::Abomonation::exhume(#bi, temp)?;
     });
 
     s.bound_impl("::abomonation::Abomonation", quote! {
