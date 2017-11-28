@@ -17,4 +17,4 @@ quote = "0.3"
 synstructure = "0.6"
 
 [dev-dependencies]
-abomonation = "0.4"
+abomonation = { git = "https://github.com/frankmcsherry/abomonation" }

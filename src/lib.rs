@@ -8,30 +8,30 @@ decl_derive!([Abomonation] => derive_abomonation);
 
 fn derive_abomonation(mut s: synstructure::Structure) -> quote::Tokens {
     let entomb = s.each(|bi| quote! {
-        ::abomonation::Abomonation::entomb(#bi, _writer);
+        ::abomonation::Abomonation::entomb(#bi, _write)?;
+    });
+
+    let extent = s.each(|bi| quote! {
+        sum += ::abomonation::Abomonation::extent(#bi);
     });
 
     s.bind_with(|_| synstructure::BindStyle::RefMut);
-    let embalm = s.each(|bi| quote! {
-        ::abomonation::Abomonation::embalm(#bi);
-    });
 
     let exhume = s.each(|bi| quote! {
         let temp = bytes;
-        let exhume_result = ::abomonation::Abomonation::exhume(#bi, temp);
-        bytes = if let Some(bytes) = exhume_result {
-            bytes
-        } else {
-            return None
-        };
+        bytes = ::abomonation::Abomonation::exhume(#bi, temp)?;
     });
 
     s.bound_impl("::abomonation::Abomonation", quote! {
-        #[inline] unsafe fn entomb(&self, _writer: &mut Vec<u8>) {
+        #[inline] unsafe fn entomb<W: ::std::io::Write>(&self, _write: &mut W) -> ::std::io::Result<()> {
             match *self { #entomb }
+            Ok(())
         }
-        #[inline] unsafe fn embalm(&mut self) {
-            match *self { #embalm }
+        #[allow(unused_mut)]
+        #[inline] fn extent(&self) -> usize {
+            let mut sum = 0;
+            match *self { #extent }
+            sum
         }
         #[allow(unused_mut)]
         #[inline] unsafe fn exhume<'a,'b>(
