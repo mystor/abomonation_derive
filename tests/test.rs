@@ -22,7 +22,9 @@ mod tests {
 
         // encode vector into a Vec<u8>
         let mut bytes = Vec::new();
-        unsafe { encode(&record, &mut bytes); }
+        unsafe { encode(&record, &mut bytes).unwrap(); }
+
+        assert_eq!(bytes.len(), measure(&record));
 
         // decode from binary data
         if let Some((result, rest)) = unsafe { decode::<Struct>(&mut bytes) } {
@@ -41,7 +43,9 @@ mod tests {
 
         // encode vector into a Vec<u8>
         let mut bytes = Vec::new();
-        unsafe { encode(&record, &mut bytes); }
+        unsafe { encode(&record, &mut bytes).unwrap(); }
+
+        assert_eq!(bytes.len(), measure(&record));
 
         // decode from binary data
         if let Some((result, rest)) = unsafe { decode::<EmptyStruct>(&mut bytes) } {
@@ -60,7 +64,9 @@ mod tests {
 
         // encode vector into a Vec<u8>
         let mut bytes = Vec::new();
-        unsafe { encode(&record, &mut bytes); }
+        unsafe { encode(&record, &mut bytes).unwrap(); }
+
+        assert_eq!(bytes.len(), measure(&record));
 
         // decode from binary data
         if let Some((result, rest)) = unsafe { decode::<TupleStruct>(&mut bytes) } {
@@ -79,7 +85,9 @@ mod tests {
 
         // encode vector into a Vec<u8>
         let mut bytes = Vec::new();
-        unsafe { encode(&record, &mut bytes); }
+        unsafe { encode(&record, &mut bytes).unwrap(); }
+
+        assert_eq!(bytes.len(), measure(&record));
 
         // decode from binary data
         if let Some((result, rest)) = unsafe { decode::<GenericStruct<String, Vec<u8>>>(&mut bytes) } {
@@ -103,7 +111,9 @@ mod tests {
 
         // encode vector into a Vec<u8>
         let mut bytes = Vec::new();
-        unsafe { encode(&record, &mut bytes); }
+        unsafe { encode(&record, &mut bytes).unwrap(); }
+
+        assert_eq!(bytes.len(), measure(&record));
 
         // decode from binary data
         if let Some((result, rest)) = unsafe { decode::<BasicEnum>(&mut bytes) } {
@@ -127,7 +137,9 @@ mod tests {
 
         // encode vector into a Vec<u8>
         let mut bytes = Vec::new();
-        unsafe { encode(&record, &mut bytes); }
+        unsafe { encode(&record, &mut bytes).unwrap(); }
+
+        assert_eq!(bytes.len(), measure(&record));
 
         // decode from binary data
         if let Some((result, rest)) = unsafe { decode::<DataEnum>(&mut bytes) } {
