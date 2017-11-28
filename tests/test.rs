@@ -156,4 +156,13 @@ mod tests {
         A(T),
         B
     }
+
+    pub struct NonAbomonable { }
+
+    #[allow(dead_code)]
+    #[derive(Abomonation)]
+    pub struct StructWithPhantomMarker {
+        data: usize,
+        #[abomonate_ignore] _phantom: ::std::marker::PhantomData<NonAbomonable>,
+    }
 }
