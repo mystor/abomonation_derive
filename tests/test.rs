@@ -156,4 +156,30 @@ mod tests {
         A(T),
         B
     }
+
+    #[test]
+    fn test_ignore_attribute() {
+
+        #[derive(Abomonation)]
+        pub struct StructWithPhantomMarker<T> {
+            data: usize,
+            // test fails to built without this attribute.
+            #[unsafe_abomonate_ignore] 
+            _phantom: ::std::marker::PhantomData<T>,
+        }
+
+        struct NonAbomonable { };
+
+        // create some test data with a phantom non-abomonable type.
+        let record = StructWithPhantomMarker {
+            data: 0,
+            _phantom: ::std::marker::PhantomData::<NonAbomonable>,
+        };
+
+        // encode vector into a Vec<u8>
+        let mut bytes = Vec::new();
+        unsafe { encode(&record, &mut bytes).unwrap(); }
+
+        assert_eq!(bytes.len(), measure(&record));
+    }
 }
