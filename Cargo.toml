@@ -1,6 +1,6 @@
 [package]
 name = "abomonation_derive"
-version = "0.2.3"
+version = "0.3.0"
 authors = ["Michael Layzell <michael@thelayzells.com>"]
 description = "A custom derive plugin for abomonation"
 license = "MIT"
@@ -17,4 +17,4 @@ quote = "0.3"
 synstructure = "0.6"
 
 [dev-dependencies]
-abomonation = { git = "https://github.com/frankmcsherry/abomonation" }
+abomonation = "0.5"
