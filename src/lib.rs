@@ -1,14 +1,18 @@
-extern crate syn;
-#[macro_use]
-extern crate synstructure;
-#[macro_use]
-extern crate quote;
+#![recursion_limit="128"]
+
+use synstructure::decl_derive;
+use quote::quote;
 
 decl_derive!([Abomonation, attributes(unsafe_abomonate_ignore)] => derive_abomonation);
 
-fn derive_abomonation(mut s: synstructure::Structure) -> quote::Tokens {
-    s.filter(|bi| !bi.ast().attrs.iter().any(|attr| attr.name() == "unsafe_abomonate_ignore"));
-    
+fn derive_abomonation(mut s: synstructure::Structure) -> proc_macro2::TokenStream {
+    s.filter(|bi| {
+        !bi.ast().attrs.iter()
+            .map(|attr| attr.parse_meta())
+            .filter_map(Result::ok)
+            .any(|attr| attr.name() == "unsafe_abomonate_ignore")
+    });
+
     let entomb = s.each(|bi| quote! {
         ::abomonation::Abomonation::entomb(#bi, _write)?;
     });
@@ -24,7 +28,7 @@ fn derive_abomonation(mut s: synstructure::Structure) -> quote::Tokens {
         bytes = ::abomonation::Abomonation::exhume(#bi, temp)?;
     });
 
-    s.bound_impl("::abomonation::Abomonation", quote! {
+    s.bound_impl(quote!(abomonation::Abomonation), quote! {
         #[inline] unsafe fn entomb<W: ::std::io::Write>(&self, _write: &mut W) -> ::std::io::Result<()> {
             match *self { #entomb }
             Ok(())

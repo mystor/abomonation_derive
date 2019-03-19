@@ -6,15 +6,17 @@ description = "A custom derive plugin for abomonation"
 license = "MIT"
 repository = "https://github.com/mystor/abomonation_derive"
 documentation = "https://docs.rs/abomonation_derive"
+edition = "2018"
 
 [lib]
 name = "abomonation_derive"
 proc-macro = true
 
 [dependencies]
-syn = "0.11"
-quote = "0.3"
-synstructure = "0.6"
+proc-macro2 = "0.4"
+syn = "0.15"
+quote = "0.6"
+synstructure = "0.10"
 
 [dev-dependencies]
 abomonation = "0.5"
