@@ -2,7 +2,6 @@
 
 #[macro_use]
 extern crate abomonation_derive;
-extern crate abomonation;
 
 #[cfg(test)]
 mod tests {
@@ -164,7 +163,7 @@ mod tests {
         pub struct StructWithPhantomMarker<T> {
             data: usize,
             // test fails to built without this attribute.
-            #[unsafe_abomonate_ignore] 
+            #[unsafe_abomonate_ignore]
             _phantom: ::std::marker::PhantomData<T>,
         }
 
@@ -181,5 +180,26 @@ mod tests {
         unsafe { encode(&record, &mut bytes).unwrap(); }
 
         assert_eq!(bytes.len(), measure(&record));
+    }
+
+    #[derive(Abomonation, Eq, PartialEq)]
+    pub struct StructUsingCratePath {
+        pub header: crate::tests::EmptyStruct,
+    }
+
+    #[test]
+    fn test_path_beginning_with_crate() {
+        let record = StructUsingCratePath { header: EmptyStruct {} };
+
+        let mut bytes = Vec::new();
+        unsafe { encode(&record, &mut bytes).unwrap(); }
+
+        assert_eq!(bytes.len(), measure(&record));
+
+        // decode from binary data
+        if let Some((result, rest)) = unsafe { decode::<StructUsingCratePath>(&mut bytes) } {
+            assert!(result == &record);
+            assert!(rest.len() == 0);
+        }
     }
 }
