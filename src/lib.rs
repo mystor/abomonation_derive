@@ -10,7 +10,7 @@ fn derive_abomonation(mut s: synstructure::Structure) -> proc_macro2::TokenStrea
         !bi.ast().attrs.iter()
             .map(|attr| attr.parse_meta())
             .filter_map(Result::ok)
-            .any(|attr| attr.name() == "unsafe_abomonate_ignore")
+            .any(|attr| attr.path().is_ident("unsafe_abomonate_ignore"))
     });
 
     let entomb = s.each(|bi| quote! {

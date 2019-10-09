@@ -13,10 +13,9 @@ name = "abomonation_derive"
 proc-macro = true
 
 [dependencies]
-proc-macro2 = "0.4"
-syn = "0.15"
-quote = "0.6"
-synstructure = "0.10"
+proc-macro2 = "1.0"
+quote = "1.0"
+synstructure = "0.12"
 
 [dev-dependencies]
 abomonation = "0.7"
