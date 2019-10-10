@@ -1,6 +1,6 @@
 [package]
 name = "abomonation_derive"
-version = "0.4.0"
+version = "0.5.0"
 authors = ["Nika Layzell <nika@thelayzells.com>"]
 description = "A custom derive plugin for abomonation"
 license = "MIT"
