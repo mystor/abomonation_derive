@@ -202,4 +202,25 @@ mod tests {
             assert!(rest.len() == 0);
         }
     }
+
+    #[derive(Eq, PartialEq, Abomonation)]
+    pub struct StructWithRef<'a> {
+        a: &'a str,
+        b: bool,
+    }
+
+    #[test]
+    fn test_struct_with_ref() {
+        let record = StructWithRef { a: &"test", b: true };
+
+        let mut bytes = Vec::new();
+        unsafe { encode(&record, &mut bytes).unwrap(); }
+
+        assert_eq!(bytes.len(), measure(&record));
+
+        if let Some((result, rest)) = unsafe { decode::<StructWithRef>(&mut bytes) } {
+            assert!(result == &record);
+            assert!(rest.len() == 0);
+        }
+    }
 }
