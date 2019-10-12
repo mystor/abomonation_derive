@@ -17,9 +17,10 @@ fn derive_abomonation(mut s: synstructure::Structure) -> proc_macro2::TokenStrea
         ::abomonation::Entomb::entomb(#bi, _write)?;
     });
 
-    let extent = s.each(|bi| quote! {
-        sum += ::abomonation::Entomb::extent(#bi);
-    });
+    let extent = s.fold(
+        quote!(0),
+        |acc, bi| quote!(#acc + ::abomonation::Entomb::extent(#bi))
+    );
 
     s.bind_with(|_| synstructure::BindStyle::RefMut);
 
@@ -37,11 +38,8 @@ fn derive_abomonation(mut s: synstructure::Structure) -> proc_macro2::TokenStrea
                 Ok(())
             }
 
-            #[allow(unused_mut)]
             fn extent(&self) -> usize {
-                let mut sum = 0;
                 match *self { #extent }
-                sum
             }
         }
 
