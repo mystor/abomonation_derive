@@ -6,6 +6,7 @@ extern crate abomonation_derive;
 #[cfg(test)]
 mod tests {
     use abomonation::*;
+    use abomonation::align::AlignedBytes;
 
     #[derive(Eq, PartialEq, Abomonation)]
     pub struct Struct {
@@ -26,6 +27,7 @@ mod tests {
         assert_eq!(bytes.len(), measure(&record));
 
         // decode from binary data
+        let mut bytes = AlignedBytes::<Struct>::new(&mut bytes);
         if let Some((result, rest)) = unsafe { decode::<Struct>(&mut bytes) } {
             assert!(result == &record);
             assert!(rest.len() == 0);
@@ -47,6 +49,7 @@ mod tests {
         assert_eq!(bytes.len(), measure(&record));
 
         // decode from binary data
+        let mut bytes = AlignedBytes::<EmptyStruct>::new(&mut bytes);
         if let Some((result, rest)) = unsafe { decode::<EmptyStruct>(&mut bytes) } {
             assert!(result == &record);
             assert!(rest.len() == 0);
@@ -68,6 +71,7 @@ mod tests {
         assert_eq!(bytes.len(), measure(&record));
 
         // decode from binary data
+        let mut bytes = AlignedBytes::<TupleStruct>::new(&mut bytes);
         if let Some((result, rest)) = unsafe { decode::<TupleStruct>(&mut bytes) } {
             assert!(result == &record);
             assert!(rest.len() == 0);
@@ -89,6 +93,7 @@ mod tests {
         assert_eq!(bytes.len(), measure(&record));
 
         // decode from binary data
+        let mut bytes = AlignedBytes::<GenericStruct<String, Vec<u8>>>::new(&mut bytes);
         if let Some((result, rest)) = unsafe { decode::<GenericStruct<String, Vec<u8>>>(&mut bytes) } {
             assert!(result == &record);
             assert!(rest.len() == 0);
@@ -115,6 +120,7 @@ mod tests {
         assert_eq!(bytes.len(), measure(&record));
 
         // decode from binary data
+        let mut bytes = AlignedBytes::<BasicEnum>::new(&mut bytes);
         if let Some((result, rest)) = unsafe { decode::<BasicEnum>(&mut bytes) } {
             assert!(result == &record);
             assert!(rest.len() == 0);
@@ -126,7 +132,7 @@ mod tests {
     pub enum DataEnum {
         A(String, u64, Vec<u8>),
         B,
-        C(String, String, String)
+        C(String, String, u16)
     }
 
     #[test]
@@ -141,6 +147,7 @@ mod tests {
         assert_eq!(bytes.len(), measure(&record));
 
         // decode from binary data
+        let mut bytes = AlignedBytes::<DataEnum>::new(&mut bytes);
         if let Some((result, rest)) = unsafe { decode::<DataEnum>(&mut bytes) } {
             assert!(result == &record);
             assert!(rest.len() == 0);
@@ -197,7 +204,30 @@ mod tests {
         assert_eq!(bytes.len(), measure(&record));
 
         // decode from binary data
+        let mut bytes = AlignedBytes::<StructUsingCratePath>::new(&mut bytes);
         if let Some((result, rest)) = unsafe { decode::<StructUsingCratePath>(&mut bytes) } {
+            assert!(result == &record);
+            assert!(rest.len() == 0);
+        }
+    }
+
+    #[derive(Eq, PartialEq, Abomonation)]
+    pub struct StructWithRef<'a> {
+        a: &'a str,
+        b: bool,
+    }
+
+    #[test]
+    fn test_struct_with_ref() {
+        let record = StructWithRef { a: &"test", b: true };
+
+        let mut bytes = Vec::new();
+        unsafe { encode(&record, &mut bytes).unwrap(); }
+
+        assert_eq!(bytes.len(), measure(&record));
+
+        let mut bytes = AlignedBytes::<StructWithRef>::new(&mut bytes);
+        if let Some((result, rest)) = unsafe { decode::<StructWithRef>(&mut bytes) } {
             assert!(result == &record);
             assert!(rest.len() == 0);
         }
