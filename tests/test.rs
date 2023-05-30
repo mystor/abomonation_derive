@@ -1,16 +1,16 @@
 #![deny(unused_mut)]
 
-#[macro_use]
-extern crate abomonation_derive;
-
 #[cfg(test)]
 mod tests {
+
     use abomonation::*;
+    use abomonation_derive::Abomonation;
 
     #[derive(Eq, PartialEq, Abomonation)]
     pub struct Struct {
         a: String,
         b: u64,
+        #[abomonate_with(Vec<u8>)]
         c: Vec<u8>,
     }
 
@@ -163,10 +163,10 @@ mod tests {
         pub struct StructWithPhantomMarker<T> {
             data: usize,
             // test fails to built without this attribute.
-            #[unsafe_abomonate_ignore]
             _phantom: ::std::marker::PhantomData<T>,
         }
 
+        #[derive(Abomonation)]
         struct NonAbomonable { };
 
         // create some test data with a phantom non-abomonable type.
@@ -198,6 +198,32 @@ mod tests {
 
         // decode from binary data
         if let Some((result, rest)) = unsafe { decode::<StructUsingCratePath>(&mut bytes) } {
+            assert!(result == &record);
+            assert!(rest.len() == 0);
+        }
+    }
+
+    #[derive(Eq, PartialEq)]
+    pub struct F([u64; 4]);
+
+    #[derive(Abomonation, Eq, PartialEq)]
+    #[abomonation_omit_bounds]
+    pub struct OmitBounds<T> {
+        #[abomonate_with(Vec<[u64; 4]>)]
+        pub header: Vec<T>,
+    }
+
+    #[test]
+    fn test_omit_bounds() {
+        let record = OmitBounds::<F> { header: vec![F([0, 1, 2, 3]), F([1, 2, 3, 4]), F([100000, 9, 7, 1])] };
+
+        let mut bytes = Vec::new();
+        unsafe { encode(&record, &mut bytes).unwrap(); }
+
+        assert_eq!(bytes.len(), measure(&record));
+
+        // decode from binary data
+        if let Some((result, rest)) = unsafe { decode::<OmitBounds::<F>>(&mut bytes) } {
             assert!(result == &record);
             assert!(rest.len() == 0);
         }
