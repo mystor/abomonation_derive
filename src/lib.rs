@@ -31,7 +31,7 @@ fn derive_abomonation(mut s: synstructure::Structure) -> proc_macro2::TokenStrea
     s.bound_impl(quote!(abomonation::Abomonation), quote! {
         #[inline] unsafe fn entomb<W: ::std::io::Write>(&self, _write: &mut W) -> ::std::io::Result<()> {
             match *self { #entomb }
-            Ok(())
+            ::std::io::Result::Ok(())
         }
         #[allow(unused_mut)]
         #[inline] fn extent(&self) -> usize {
@@ -43,9 +43,9 @@ fn derive_abomonation(mut s: synstructure::Structure) -> proc_macro2::TokenStrea
         #[inline] unsafe fn exhume<'a,'b>(
             &'a mut self,
             mut bytes: &'b mut [u8]
-        ) -> Option<&'b mut [u8]> {
+        ) -> ::std::option::Option<&'b mut [u8]> {
             match *self { #exhume }
-            Some(bytes)
+            ::std::option::Option::Some(bytes)
         }
     })
 }

@@ -167,7 +167,7 @@ mod tests {
             _phantom: ::std::marker::PhantomData<T>,
         }
 
-        struct NonAbomonable { };
+        struct NonAbomonable { }
 
         // create some test data with a phantom non-abomonable type.
         let record = StructWithPhantomMarker {
